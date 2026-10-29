@@ -1,0 +1,840 @@
+<!DOCTYPE html>
+<!-- Serve locally: python3 -m http.server 8765  →  http://127.0.0.1:8765/ -->
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>RealBM — evolving architecture and reward together</title>
+  <meta name="description" content="RealBM evolves PHA and DQN agents with CMA-ME, MAP-Elites and ES-HyperNEAT, comparing self-bootstrapped Q against extrinsic and random reward baselines on a shared grid and three classic benchmarks." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --ink: #14201a;
+      --mist: #e4efe8;
+      --fog: #cfdfd4;
+      --paper: #f2f6f3;
+      --teal: #0c6b58;
+      --teal-deep: #074739;
+      --star: #d4a017;
+      --muted: #5a6d61;
+      --line: rgba(20, 32, 26, 0.14);
+      --ease: cubic-bezier(0.22, 1, 0.36, 1);
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: "IBM Plex Sans", system-ui, sans-serif;
+      color: var(--ink);
+      background:
+        radial-gradient(1100px 520px at 8% -8%, #bdd9cc 0%, transparent 55%),
+        radial-gradient(800px 420px at 100% 0%, #d5e6db 0%, transparent 48%),
+        linear-gradient(180deg, var(--mist) 0%, var(--paper) 38%, var(--paper) 100%);
+      line-height: 1.55;
+      overflow-x: hidden;
+    }
+
+    a { color: inherit; }
+
+    .nav {
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      z-index: 5;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 1.25rem clamp(1.25rem, 4vw, 3rem);
+      color: #f2f6f3;
+      mix-blend-mode: difference;
+    }
+
+    .nav-brand {
+      font-family: "Bricolage Grotesque", sans-serif;
+      font-weight: 700;
+      font-size: 1.05rem;
+      letter-spacing: -0.02em;
+      text-decoration: none;
+    }
+
+    .nav-links {
+      display: flex;
+      gap: 1.75rem;
+      list-style: none;
+      font-family: "Bricolage Grotesque", sans-serif;
+      font-size: 0.85rem;
+      font-weight: 500;
+    }
+
+    .nav-links a { text-decoration: none; opacity: 0.85; transition: opacity 0.2s; }
+    .nav-links a:hover { opacity: 1; }
+
+    /* ---------- hero ---------- */
+    .hero {
+      position: relative;
+      min-height: 100svh;
+      display: grid;
+      grid-template-rows: 1fr auto;
+      color: #f4f8f5;
+    }
+
+    .hero-media {
+      position: absolute;
+      inset: 0;
+      overflow: hidden;
+      background: #0c1410;
+    }
+
+    .hero-media img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      object-position: center 35%;
+      opacity: 0.78;
+      transform: scale(1.02);
+      animation: drift 28s ease-in-out infinite alternate;
+    }
+
+    .hero-shade {
+      position: absolute;
+      inset: 0;
+      background:
+        linear-gradient(180deg, rgba(6, 14, 10, 0.45) 0%, rgba(6, 14, 10, 0.18) 38%, rgba(6, 14, 10, 0.88) 100%),
+        linear-gradient(90deg, rgba(6, 14, 10, 0.72) 0%, rgba(6, 14, 10, 0.25) 48%, transparent 72%);
+      pointer-events: none;
+    }
+
+    .hero-copy {
+      position: relative;
+      z-index: 2;
+      align-self: end;
+      padding: clamp(5.5rem, 14vh, 8rem) clamp(1.25rem, 4vw, 3rem) clamp(2.5rem, 6vh, 4rem);
+      max-width: 40rem;
+    }
+
+    .brand {
+      font-family: "Bricolage Grotesque", sans-serif;
+      font-weight: 800;
+      font-size: clamp(3.5rem, 9.5vw, 6.8rem);
+      line-height: 0.9;
+      letter-spacing: -0.05em;
+      margin-bottom: 1rem;
+      opacity: 0;
+      transform: translateY(1.2rem);
+      animation: rise 0.9s var(--ease) 0.12s forwards;
+    }
+
+    .hero h1 {
+      font-family: "Bricolage Grotesque", sans-serif;
+      font-weight: 500;
+      font-size: clamp(1.25rem, 2.4vw, 1.7rem);
+      line-height: 1.28;
+      letter-spacing: -0.02em;
+      max-width: 24ch;
+      margin-bottom: 0.85rem;
+      opacity: 0;
+      transform: translateY(1.2rem);
+      animation: rise 0.9s var(--ease) 0.28s forwards;
+    }
+
+    .hero-lead {
+      font-size: 1.02rem;
+      color: rgba(244, 248, 245, 0.78);
+      max-width: 38ch;
+      margin-bottom: 1.75rem;
+      opacity: 0;
+      transform: translateY(1.2rem);
+      animation: rise 0.9s var(--ease) 0.42s forwards;
+    }
+
+    .cta-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.75rem 1rem;
+      opacity: 0;
+      transform: translateY(1.2rem);
+      animation: rise 0.9s var(--ease) 0.55s forwards;
+    }
+
+    .btn {
+      font-family: "Bricolage Grotesque", sans-serif;
+      font-weight: 600;
+      font-size: 0.92rem;
+      text-decoration: none;
+      padding: 0.7rem 1.2rem;
+      border-radius: 2px;
+      transition: background 0.2s, color 0.2s, transform 0.2s, border-color 0.2s;
+    }
+
+    .btn-primary { background: var(--star); color: var(--ink); }
+    .btn-primary:hover { background: #e2b53a; transform: translateY(-1px); }
+
+    .btn-ghost {
+      background: transparent;
+      color: #f4f8f5;
+      border: 1px solid rgba(244, 248, 245, 0.45);
+    }
+    .btn-ghost:hover { border-color: #f4f8f5; background: rgba(244, 248, 245, 0.08); }
+
+    @keyframes rise {
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    @keyframes drift {
+      from { transform: scale(1.02) translate(0, 0); }
+      to { transform: scale(1.06) translate(-1.2%, -0.8%); }
+    }
+
+    /* ---------- sections ---------- */
+    section {
+      padding: clamp(4rem, 10vh, 6.5rem) clamp(1.25rem, 4vw, 3rem);
+    }
+
+    .section-inner {
+      max-width: 70rem;
+      margin: 0 auto;
+    }
+
+    .eyebrow {
+      font-family: "Bricolage Grotesque", sans-serif;
+      font-size: 0.76rem;
+      font-weight: 600;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--teal);
+      margin-bottom: 0.85rem;
+    }
+
+    h2 {
+      font-family: "Bricolage Grotesque", sans-serif;
+      font-weight: 700;
+      font-size: clamp(1.8rem, 3.4vw, 2.55rem);
+      letter-spacing: -0.03em;
+      line-height: 1.12;
+      margin-bottom: 1rem;
+      max-width: 20ch;
+    }
+
+    .section-lead {
+      font-size: 1.08rem;
+      color: var(--muted);
+      max-width: 40rem;
+      margin-bottom: 2.4rem;
+    }
+
+    .idea { border-top: 1px solid var(--line); }
+
+    .idea-visual {
+      margin-top: 0.5rem;
+      width: 100%;
+      border-radius: 2px;
+      overflow: hidden;
+      background: #0c1410;
+      aspect-ratio: 16 / 9;
+    }
+
+    .idea-visual img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+
+    .idea-caption {
+      margin-top: 0.85rem;
+      font-size: 0.95rem;
+      color: var(--muted);
+      max-width: 44rem;
+    }
+
+    /* method */
+    .method {
+      background: linear-gradient(180deg, transparent, var(--fog) 28%, var(--fog));
+    }
+
+    .flow {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 0;
+      list-style: none;
+      counter-reset: step;
+      margin-bottom: 3rem;
+    }
+
+    .flow li {
+      padding: 1.4rem 1.2rem 1.4rem 0;
+      border-top: 2px solid var(--ink);
+      counter-increment: step;
+    }
+
+    .flow li::before {
+      content: counter(step, decimal-leading-zero);
+      display: block;
+      font-family: "Bricolage Grotesque", sans-serif;
+      font-weight: 700;
+      font-size: 0.78rem;
+      letter-spacing: 0.06em;
+      color: var(--teal);
+      margin-bottom: 0.8rem;
+    }
+
+    .flow h3 {
+      font-family: "Bricolage Grotesque", sans-serif;
+      font-size: 1.12rem;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      margin-bottom: 0.4rem;
+    }
+
+    .flow p {
+      font-size: 0.95rem;
+      color: var(--muted);
+      max-width: 19ch;
+    }
+
+    .split {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: clamp(1.5rem, 4vw, 3rem);
+      border-top: 1px solid var(--line);
+      padding-top: 2rem;
+    }
+
+    .split h3 {
+      font-family: "Bricolage Grotesque", sans-serif;
+      font-size: 1.2rem;
+      font-weight: 700;
+      margin-bottom: 0.55rem;
+      letter-spacing: -0.02em;
+    }
+
+    .split p { color: var(--muted); font-size: 0.98rem; max-width: 34ch; }
+
+    .split ul {
+      margin-top: 0.9rem;
+      list-style: none;
+      font-size: 0.95rem;
+      color: var(--ink);
+    }
+
+    .split li {
+      padding: 0.35rem 0;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .split li:last-child { border-bottom: none; }
+
+    .split li span {
+      color: var(--muted);
+      display: block;
+      font-size: 0.86rem;
+      margin-top: 0.15rem;
+    }
+
+    /* findings */
+    .findings .figure {
+      width: 100%;
+      border-radius: 2px;
+      overflow: hidden;
+      background: var(--mist);
+      border: 1px solid var(--line);
+      margin-bottom: 2rem;
+    }
+
+    .findings .figure img {
+      width: 100%;
+      height: auto;
+      display: block;
+    }
+
+    .findings .figure figcaption {
+      padding: 0.9rem 1.1rem;
+      font-size: 0.9rem;
+      color: var(--muted);
+      border-top: 1px solid var(--line);
+    }
+
+    .score-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.9rem;
+      margin-bottom: 0.5rem;
+    }
+
+    .score-table th,
+    .score-table td {
+      text-align: left;
+      padding: 0.55rem 0.65rem;
+      border-bottom: 1px solid var(--line);
+      vertical-align: baseline;
+    }
+
+    .score-table th {
+      font-family: "Bricolage Grotesque", sans-serif;
+      font-weight: 600;
+      font-size: 0.78rem;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+
+    .score-table td:nth-child(n+2) {
+      font-variant-numeric: tabular-nums;
+      font-family: "Bricolage Grotesque", sans-serif;
+      font-weight: 600;
+    }
+
+    .score-table .best { color: var(--teal-deep); }
+    .score-table .note {
+      display: block;
+      font-family: "IBM Plex Sans", sans-serif;
+      font-weight: 400;
+      font-size: 0.78rem;
+      color: var(--muted);
+      margin-top: 0.1rem;
+    }
+
+    /* benchmarks */
+    .bench {
+      border-top: 1px solid var(--line);
+    }
+
+    .tasks {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: clamp(1.25rem, 3vw, 2rem);
+      margin-bottom: 2.5rem;
+    }
+
+    .task {
+      border-top: 2px solid var(--ink);
+      padding-top: 1.1rem;
+    }
+
+    .task h3 {
+      font-family: "Bricolage Grotesque", sans-serif;
+      font-size: 1.25rem;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      margin-bottom: 0.45rem;
+    }
+
+    .task .tests {
+      font-size: 0.82rem;
+      font-weight: 600;
+      color: var(--teal);
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      margin-bottom: 0.7rem;
+    }
+
+    .task p {
+      font-size: 0.95rem;
+      color: var(--muted);
+      margin-bottom: 1rem;
+    }
+
+    .task .result {
+      font-family: "Bricolage Grotesque", sans-serif;
+      font-size: 0.98rem;
+      font-weight: 600;
+      line-height: 1.35;
+      color: var(--ink);
+    }
+
+    .task-media {
+      margin-top: 1.1rem;
+      background: #0c1410;
+      border-radius: 2px;
+      overflow: hidden;
+      aspect-ratio: 16 / 10;
+    }
+
+    .task-media img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+
+    .bench-figure {
+      width: 100%;
+      border-radius: 2px;
+      overflow: hidden;
+      border: 1px solid var(--line);
+      background: var(--mist);
+    }
+
+    .bench-figure img { width: 100%; height: auto; display: block; }
+    .bench-figure figcaption {
+      padding: 0.85rem 1.1rem;
+      font-size: 0.9rem;
+      color: var(--muted);
+      border-top: 1px solid var(--line);
+    }
+
+    /* run */
+    .run { border-top: 1px solid var(--line); }
+
+    pre.run-cmd {
+      font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+      font-size: 0.8rem;
+      line-height: 1.65;
+      background: var(--ink);
+      color: #d7e6dc;
+      padding: 1.35rem 1.5rem;
+      border-radius: 2px;
+      overflow-x: auto;
+    }
+
+    pre.run-cmd .c { color: #7a9a88; }
+    pre.run-cmd .k { color: #e8c547; }
+
+    .links {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.85rem 1.5rem;
+      margin-top: 1.75rem;
+      font-family: "Bricolage Grotesque", sans-serif;
+      font-weight: 600;
+      font-size: 0.95rem;
+    }
+
+    .links a {
+      color: var(--teal-deep);
+      text-decoration: none;
+      border-bottom: 1px solid transparent;
+      transition: border-color 0.2s;
+    }
+    .links a:hover { border-bottom-color: var(--teal); }
+
+    footer {
+      padding: 2rem clamp(1.25rem, 4vw, 3rem) 3rem;
+      border-top: 1px solid var(--line);
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.75rem 2rem;
+      justify-content: space-between;
+      color: var(--muted);
+      font-size: 0.9rem;
+    }
+
+    footer strong {
+      font-family: "Bricolage Grotesque", sans-serif;
+      color: var(--ink);
+      font-weight: 700;
+    }
+
+    .reveal {
+      opacity: 0;
+      transform: translateY(1.4rem);
+      transition: opacity 0.8s var(--ease), transform 0.8s var(--ease);
+    }
+    .reveal.in { opacity: 1; transform: translateY(0); }
+
+    @media (max-width: 900px) {
+      .flow, .tasks, .split { grid-template-columns: 1fr 1fr; }
+      .nav-links { display: none; }
+    }
+
+    @media (max-width: 560px) {
+      .flow, .tasks, .split { grid-template-columns: 1fr; }
+      .hero-copy { max-width: none; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .brand, .hero h1, .hero-lead, .cta-row,
+      .hero-media img {
+        opacity: 1; transform: none; animation: none;
+      }
+      .reveal { opacity: 1; transform: none; transition: none; }
+    }
+  </style>
+</head>
+<body>
+  <nav class="nav" aria-label="Primary">
+    <a class="nav-brand" href="#">RealBM</a>
+    <ul class="nav-links">
+      <li><a href="#idea">Idea</a></li>
+      <li><a href="#method">Method</a></li>
+      <li><a href="#findings">Grid</a></li>
+      <li><a href="#benchmarks">Benchmarks</a></li>
+      <li><a href="#run">Run</a></li>
+      <li><a href="poster.html">Poster</a></li>
+    </ul>
+  </nav>
+
+  <header class="hero">
+    <div class="hero-media" aria-hidden="true">
+      <img
+        src="results/grid/dqn_q_lr0.05_ts0/s29/gen99.gif"
+        alt=""
+        width="1200"
+        height="900"
+      />
+      <div class="hero-shade"></div>
+    </div>
+    <div class="hero-copy">
+      <p class="brand">RealBM</p>
+      <h1>Evolve the learner. Bootstrap the reward.</h1>
+      <p class="hero-lead">
+        Quality-diversity search builds PHA and DQN agents on a shared grid, then asks whether a self-bootstrapped Q signal can stand in for extrinsic reward.
+      </p>
+      <div class="cta-row">
+        <a class="btn btn-primary" href="#findings">See the results</a>
+        <a class="btn btn-ghost" href="poster.html">Open the poster</a>
+      </div>
+    </div>
+  </header>
+
+  <section class="idea" id="idea">
+    <div class="section-inner">
+      <p class="eyebrow reveal">The idea</p>
+      <h2 class="reveal">One contested map. Two agent bodies. Four reward stories.</h2>
+      <p class="section-lead reveal">
+        A generation walks the same wraparound grid at once. Fitness is net stars under competition. Inside each lifetime the weights may stay fixed, predict the next observation, or update a Q head—with no reward, with the true reward, or with a random projection of the observation.
+      </p>
+      <div class="idea-visual reveal">
+        <img
+          src="results/grid/pha_q_lr0.05_w8_ts0/s42/gen99.gif"
+          alt="Final generation of the best PHA self-bootstrapped-Q run: agents on a shared grid"
+          loading="lazy"
+        />
+      </div>
+      <p class="idea-caption reveal">
+        Fill is spectral radius (blue contracts, red expands). The number is hidden-neuron count. Gold stars are contested; dark cells are obstacles. Shown: PHA with self-bootstrapped Q, seed&nbsp;42, generation&nbsp;99.
+      </p>
+    </div>
+  </section>
+
+  <section class="method" id="method">
+    <div class="section-inner">
+      <p class="eyebrow reveal">The method</p>
+      <h2 class="reveal">From genotype to behaviour in four moves</h2>
+      <p class="section-lead reveal">
+        CMA-ME searches a 60-dimensional CPPN genome. ES-HyperNEAT grows the substrate. MAP-Elites keeps diversity across dynamics and size. Optional within-lifetime learning rewrites weights without moving the archive axis.
+      </p>
+      <ol class="flow">
+        <li class="reveal">
+          <h3>CMA-ME</h3>
+          <p>Four emitters sample CPPN genomes (λ&nbsp;=&nbsp;20) in continuous space.</p>
+        </li>
+        <li class="reveal">
+          <h3>ES-HyperNEAT</h3>
+          <p>A CPPN queries substrate coordinates to place weights and a [0,1] hidden budget.</p>
+        </li>
+        <li class="reveal">
+          <h3>Lifetime</h3>
+          <p>Grid episode or a single-agent task; optional PC / Q updates inside the lifetime.</p>
+        </li>
+        <li class="reveal">
+          <h3>MAP-Elites</h3>
+          <p>Archive by spectral radius × hidden size so capacity cannot erase diversity.</p>
+        </li>
+      </ol>
+
+      <div class="split">
+        <div class="reveal">
+          <h3>Two agent bodies</h3>
+          <p>Same substrate search, different dynamics.</p>
+          <ul>
+            <li>PHA<span>Recurrent softsign network; probabilistic gating; softsign-bounded Q head.</span></li>
+            <li>DQN<span>Feedforward softsign hidden layer; linear Q head; replay + target network.</span></li>
+          </ul>
+        </div>
+        <div class="reveal">
+          <h3>Four Q targets</h3>
+          <p>Only the target changes; the outer evolutionary loop stays fixed.</p>
+          <ul>
+            <li>Self-bootstrapped<span>y = maxQ / Hz + γ maxQ′ — no reward at all.</span></li>
+            <li>Extrinsic<span>y = scale·r + γ maxQ′ — the intended upper bound.</span></li>
+            <li>Random<span>r = u·obs with fixed random u — a control.</span></li>
+            <li>Zero<span>Train toward 0 — a second control on the grid.</span></li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="findings" id="findings">
+    <div class="section-inner">
+      <p class="eyebrow reveal">Grid world · 10 seeds</p>
+      <h2 class="reveal">Self-bootstrapped Q wins where the extrinsic “upper bound” does not</h2>
+      <p class="section-lead reveal">
+        Mean fitness over the last 10 generations. Architecture barely matters without learning. The random-reward control recovers about half of the self-bootstrapped gain; the zero-target control sits below no learning. Extrinsic reward fails to act as an upper bound under this within-lifetime learner.
+      </p>
+
+      <table class="score-table reveal">
+        <thead>
+          <tr>
+            <th>Variation</th>
+            <th>PHA</th>
+            <th>DQN</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>No learning</td>
+            <td>8.1 ± 1.2</td>
+            <td>8.2 ± 0.7</td>
+          </tr>
+          <tr>
+            <td>Predictive coding</td>
+            <td>10.2 ± 1.0</td>
+            <td>—</td>
+          </tr>
+          <tr>
+            <td>Self-bootstrapped Q</td>
+            <td class="best">11.3 ± 0.9<span class="note">best PHA</span></td>
+            <td class="best">12.0 ± 0.8<span class="note">best DQN</span></td>
+          </tr>
+          <tr>
+            <td>Extrinsic reward</td>
+            <td>8.1 ± 1.1</td>
+            <td>9.8 ± 0.8</td>
+          </tr>
+          <tr>
+            <td>Random reward</td>
+            <td>9.2 ± 0.6</td>
+            <td>9.5 ± 0.8</td>
+          </tr>
+          <tr>
+            <td>Zero target</td>
+            <td>—</td>
+            <td>7.7 ± 0.7</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <figure class="figure reveal">
+        <img
+          src="results/summary/compare_grid.png"
+          alt="Grid world comparison across PHA and DQN learning rules"
+          loading="lazy"
+        />
+        <figcaption>
+          Thick lines are seed means; faint lines are individual seeds. Learning rate 0.05, γ = 0.9, target network frozen per episode.
+        </figcaption>
+      </figure>
+    </div>
+  </section>
+
+  <section class="bench" id="benchmarks">
+    <div class="section-inner">
+      <p class="eyebrow reveal">Benchmarks · 5 seeds</p>
+      <h2 class="reveal">Architecture decides. Within-lifetime learning usually does not.</h2>
+      <p class="section-lead reveal">
+        Three tasks that the shared grid cannot ask: memory, recurrence from partial observations, and sparse reward. The self-bootstrapped advantage from the grid does not transfer under these settings.
+      </p>
+
+      <div class="tasks">
+        <article class="task reveal">
+          <p class="tests">Tests memory</p>
+          <h3>T-maze</h3>
+          <p>
+            Cue visible only at step 0. Corridor length 4. Fitness over 40 trials (max 40). A feedforward agent cannot beat chance.
+          </p>
+          <p class="result">
+            PHA no-learning 2.6 ± 0.8 · all DQN arms ≈ 0 · learning arms hurt PHA (abstention).
+          </p>
+          <div class="task-media">
+            <img src="results/tmaze/pha_none/s1/anim.gif" alt="T-maze animation of the best PHA no-learning run" loading="lazy" />
+          </div>
+        </article>
+
+        <article class="task reveal">
+          <p class="tests">Tests recurrence</p>
+          <h3>CartPole POMDP</h3>
+          <p>
+            Velocities hidden; only position and angle shown. Fitness is steps over 3 episodes (max 600).
+          </p>
+          <p class="result">
+            PHA ≈ 140–149 · DQN ≈ 121–123 · predictive coding alone helps slightly (149).
+          </p>
+          <div class="task-media">
+            <img src="results/cartpole/pha_pc_lr0.05_w4/s11/anim.gif" alt="CartPole animation of the best PHA predictive-coding run" loading="lazy" />
+          </div>
+        </article>
+
+        <article class="task reveal">
+          <p class="tests">Tests sparse reward</p>
+          <h3>MountainCar</h3>
+          <p>
+            Reward −1 per step until the goal. Fitness is steps saved when reached (else 0). Evolution alone already finds solvers.
+          </p>
+          <p class="result">
+            DQN no-learning 178 ± 5.5 · every learning rule hurts · PHA lags (~90–122).
+          </p>
+          <div class="task-media">
+            <img src="results/mountaincar/dqn_none/s1/anim.gif" alt="MountainCar animation of the best DQN no-learning run" loading="lazy" />
+          </div>
+        </article>
+      </div>
+
+      <figure class="bench-figure reveal">
+        <img
+          src="results/summary/compare_benchmarks.png"
+          alt="Benchmark fitness curves and final-score strips across tasks and arms"
+          loading="lazy"
+        />
+        <figcaption>
+          Top: smoothed fitness over generations. Bottom: per-seed final scores (mean ± SEM). BPTT window 4; reward scale 0.1 on CartPole and MountainCar.
+        </figcaption>
+      </figure>
+    </div>
+  </section>
+
+  <section class="run" id="run">
+    <div class="section-inner">
+      <p class="eyebrow reveal">Reproduce</p>
+      <h2 class="reveal">Build, sweep, render</h2>
+      <p class="section-lead reveal">
+        Header-only C++17 with Eigen. Logs name themselves from the run tag; visualize.py ranks runs and draws the best and worst.
+      </p>
+      <pre class="run-cmd reveal"><span class="c"># build</span>
+clang++ -std=c++17 -O2 -I/opt/homebrew/include/eigen3 main.cpp -o realbm
+
+<span class="c"># grid baselines + three benchmarks</span>
+./run_sweep.sh grid
+./run_sweep.sh bench
+
+<span class="c"># overviews, best/worst grids, benchmark sheets</span>
+python3 visualize.py --no-render
+python3 visualize.py --anim --jobs 8</pre>
+      <div class="links reveal">
+        <a href="poster.html">Project poster →</a>
+        <a href="results/summary/compare_grid.png">Grid figure</a>
+        <a href="results/summary/compare_benchmarks.png">Benchmark figure</a>
+        <a href="results/summary/results_summary.csv">Results CSV</a>
+      </div>
+    </div>
+  </section>
+
+  <footer>
+    <p><strong>RealBM</strong> — CMA-ME · MAP-Elites · ES-HyperNEAT · self-bootstrapped Q</p>
+    <p>Local research prototype · grid n=10 · benchmarks n=5</p>
+  </footer>
+
+  <script>
+    const reveals = document.querySelectorAll(".reveal");
+    if ("IntersectionObserver" in window) {
+      const io = new IntersectionObserver(
+        (entries) => {
+          entries.forEach((e) => {
+            if (e.isIntersecting) {
+              e.target.classList.add("in");
+              io.unobserve(e.target);
+            }
+          });
+        },
+        { rootMargin: "0px 0px -8% 0px", threshold: 0.1 }
+      );
+      reveals.forEach((el) => io.observe(el));
+    } else {
+      reveals.forEach((el) => el.classList.add("in"));
+    }
+  </script>
+</body>
+</html>

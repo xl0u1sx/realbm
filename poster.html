@@ -1,0 +1,528 @@
+<!DOCTYPE html>
+<!--
+  Project poster — landscape 36×24 in board.
+  Screen: open in a browser and zoom to fit.
+  Print: File → Print → landscape, paper size custom 36×24 in (or scale to A0/A1), backgrounds on.
+-->
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>RealBM — project poster</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --ink: #14201a;
+      --paper: #f1f5f2;
+      --mist: #dde8e1;
+      --teal: #0c6b58;
+      --teal-deep: #074739;
+      --star: #d4a017;
+      --muted: #5a6d61;
+      --line: rgba(20, 32, 26, 0.16);
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    html, body {
+      background: #2a3530;
+      color: var(--ink);
+      font-family: "IBM Plex Sans", system-ui, sans-serif;
+    }
+
+    .stage {
+      min-height: 100vh;
+      display: grid;
+      place-items: center;
+      padding: 1.5rem;
+    }
+
+    .board {
+      width: min(96vw, 1400px);
+      aspect-ratio: 36 / 24;
+      background:
+        radial-gradient(900px 420px at 0% 0%, #c5ddd0 0%, transparent 55%),
+        radial-gradient(700px 360px at 100% 0%, #d7e6dd 0%, transparent 50%),
+        var(--paper);
+      display: grid;
+      grid-template-rows: auto 1fr auto;
+      padding: 2.2% 2.4% 1.8%;
+      gap: 1.4%;
+      box-shadow: 0 18px 50px rgba(0, 0, 0, 0.35);
+    }
+
+    /* ---- header ---- */
+    .head {
+      display: grid;
+      grid-template-columns: 1.15fr 1.6fr auto;
+      gap: 2%;
+      align-items: end;
+      border-bottom: 3px solid var(--ink);
+      padding-bottom: 1.1%;
+    }
+
+    .brand {
+      font-family: "Bricolage Grotesque", sans-serif;
+      font-weight: 800;
+      font-size: clamp(2.4rem, 5.2vw, 4.6rem);
+      line-height: 0.9;
+      letter-spacing: -0.05em;
+    }
+
+    .tagline {
+      font-family: "Bricolage Grotesque", sans-serif;
+      font-weight: 500;
+      font-size: clamp(0.95rem, 1.55vw, 1.45rem);
+      letter-spacing: -0.02em;
+      line-height: 1.25;
+      max-width: 28ch;
+      padding-bottom: 0.25rem;
+    }
+
+    .meta {
+      text-align: right;
+      font-size: clamp(0.58rem, 0.85vw, 0.78rem);
+      color: var(--muted);
+      line-height: 1.45;
+      padding-bottom: 0.3rem;
+    }
+
+    .meta strong {
+      display: block;
+      font-family: "Bricolage Grotesque", sans-serif;
+      color: var(--ink);
+      font-size: 1.05em;
+      margin-bottom: 0.15rem;
+    }
+
+    /* ---- body columns ---- */
+    .cols {
+      display: grid;
+      grid-template-columns: 0.92fr 1.35fr 1fr;
+      gap: 2%;
+      min-height: 0;
+    }
+
+    .col {
+      display: flex;
+      flex-direction: column;
+      gap: 2.4%;
+      min-height: 0;
+    }
+
+    .block {
+      min-height: 0;
+    }
+
+    .block h2 {
+      font-family: "Bricolage Grotesque", sans-serif;
+      font-size: clamp(0.78rem, 1.15vw, 1.05rem);
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--teal);
+      margin-bottom: 0.45rem;
+      border-bottom: 1.5px solid var(--line);
+      padding-bottom: 0.25rem;
+    }
+
+    .block p, .block li {
+      font-size: clamp(0.58rem, 0.82vw, 0.78rem);
+      line-height: 1.4;
+      color: var(--ink);
+    }
+
+    .block p + p { margin-top: 0.45rem; }
+    .muted { color: var(--muted); }
+
+    .block ul {
+      list-style: none;
+      margin-top: 0.35rem;
+    }
+
+    .block li {
+      padding: 0.28rem 0;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .block li:last-child { border-bottom: none; }
+
+    .block li strong {
+      font-family: "Bricolage Grotesque", sans-serif;
+      font-weight: 700;
+    }
+
+    .pipeline {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0.45rem 0.7rem;
+      margin-top: 0.35rem;
+    }
+
+    .pipeline div {
+      border-top: 2px solid var(--ink);
+      padding-top: 0.3rem;
+    }
+
+    .pipeline span {
+      display: block;
+      font-family: "Bricolage Grotesque", sans-serif;
+      font-weight: 700;
+      font-size: clamp(0.62rem, 0.9vw, 0.85rem);
+      margin-bottom: 0.15rem;
+    }
+
+    .pipeline p {
+      font-size: clamp(0.52rem, 0.72vw, 0.68rem);
+      color: var(--muted);
+      line-height: 1.3;
+    }
+
+    .fig {
+      flex: 1;
+      min-height: 0;
+      display: flex;
+      flex-direction: column;
+      background: #fff;
+      border: 1px solid var(--line);
+      overflow: hidden;
+    }
+
+    .fig img {
+      width: 100%;
+      height: auto;
+      display: block;
+      flex: 1;
+      object-fit: contain;
+      background: #fff;
+    }
+
+    .fig figcaption {
+      font-size: clamp(0.5rem, 0.7vw, 0.66rem);
+      color: var(--muted);
+      padding: 0.35rem 0.5rem;
+      border-top: 1px solid var(--line);
+      line-height: 1.3;
+    }
+
+    .callout {
+      background: linear-gradient(135deg, #d9ebe2, #eaf3ee);
+      border-left: 4px solid var(--teal);
+      padding: 0.55rem 0.7rem;
+    }
+
+    .callout strong {
+      display: block;
+      font-family: "Bricolage Grotesque", sans-serif;
+      font-size: clamp(0.72rem, 1.05vw, 0.98rem);
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      margin-bottom: 0.25rem;
+      line-height: 1.2;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: clamp(0.5rem, 0.72vw, 0.68rem);
+      margin-top: 0.25rem;
+    }
+
+    th, td {
+      text-align: left;
+      padding: 0.22rem 0.28rem;
+      border-bottom: 1px solid var(--line);
+      vertical-align: baseline;
+    }
+
+    th {
+      font-family: "Bricolage Grotesque", sans-serif;
+      font-weight: 600;
+      font-size: 0.9em;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+
+    td:nth-child(n+2) {
+      font-family: "Bricolage Grotesque", sans-serif;
+      font-weight: 600;
+      font-variant-numeric: tabular-nums;
+    }
+
+    td.best { color: var(--teal-deep); }
+
+    .tasks {
+      display: grid;
+      gap: 0.55rem;
+    }
+
+    .task {
+      border-top: 2px solid var(--ink);
+      padding-top: 0.3rem;
+    }
+
+    .task h3 {
+      font-family: "Bricolage Grotesque", sans-serif;
+      font-size: clamp(0.68rem, 0.98vw, 0.92rem);
+      font-weight: 700;
+      letter-spacing: -0.02em;
+    }
+
+    .task .tests {
+      font-size: clamp(0.48rem, 0.68vw, 0.62rem);
+      font-weight: 600;
+      color: var(--teal);
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      margin-bottom: 0.15rem;
+    }
+
+    .task p {
+      font-size: clamp(0.52rem, 0.72vw, 0.68rem);
+      color: var(--muted);
+      line-height: 1.3;
+      margin-top: 0.15rem;
+    }
+
+    .task .result {
+      margin-top: 0.25rem;
+      font-family: "Bricolage Grotesque", sans-serif;
+      font-weight: 600;
+      font-size: clamp(0.55rem, 0.78vw, 0.72rem);
+      color: var(--ink);
+      line-height: 1.3;
+    }
+
+    .takeaways li {
+      font-size: clamp(0.55rem, 0.78vw, 0.72rem) !important;
+    }
+
+    /* ---- footer ---- */
+    .foot {
+      display: grid;
+      grid-template-columns: 1.4fr 1fr auto;
+      gap: 2%;
+      align-items: center;
+      border-top: 2px solid var(--ink);
+      padding-top: 0.9%;
+      font-size: clamp(0.5rem, 0.72vw, 0.68rem);
+      color: var(--muted);
+    }
+
+    .foot strong {
+      font-family: "Bricolage Grotesque", sans-serif;
+      color: var(--ink);
+    }
+
+    .foot code {
+      font-family: ui-monospace, Menlo, Consolas, monospace;
+      font-size: 0.95em;
+      color: var(--teal-deep);
+    }
+
+    .print-hint {
+      position: fixed;
+      bottom: 0.75rem;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(20, 32, 26, 0.9);
+      color: #e8f0eb;
+      font-size: 0.78rem;
+      padding: 0.45rem 0.9rem;
+      border-radius: 2px;
+      z-index: 10;
+    }
+
+    .print-hint a { color: var(--star); }
+
+    @media print {
+      html, body { background: white; }
+      .stage { padding: 0; min-height: 0; display: block; }
+      .board {
+        width: 36in;
+        height: 24in;
+        box-shadow: none;
+        break-inside: avoid;
+      }
+      .print-hint { display: none; }
+      @page {
+        size: 36in 24in landscape;
+        margin: 0;
+      }
+    }
+
+    @media (max-width: 900px) {
+      .stage { padding: 0.5rem; }
+      .board {
+        width: 100%;
+        aspect-ratio: auto;
+        height: auto;
+        grid-template-rows: auto;
+      }
+      .cols { grid-template-columns: 1fr; }
+      .head { grid-template-columns: 1fr; gap: 0.5rem; }
+      .meta { text-align: left; }
+      .foot { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <p class="print-hint">
+    Print-ready 36×24″ board · <a href="index.html">Back to landing page</a> · Print with backgrounds on
+  </p>
+
+  <div class="stage">
+    <article class="board" aria-label="RealBM project poster">
+      <header class="head">
+        <p class="brand">RealBM</p>
+        <p class="tagline">Evolving architecture and reward together — does a self-bootstrapped Q signal replace extrinsic reward?</p>
+        <p class="meta">
+          <strong>Quality-diversity neuroevolution</strong>
+          CMA-ME · MAP-Elites · ES-HyperNEAT<br />
+          PHA vs DQN · grid n=10 · benchmarks n=5
+        </p>
+      </header>
+
+      <div class="cols">
+        <!-- LEFT -->
+        <div class="col">
+          <div class="block">
+            <h2>Question</h2>
+            <p>
+              Can evolution search neural architecture and an implied reward at once, if the within-lifetime Q update uses no external reward—
+              only a horizon-normalised bootstrap of the model’s own values?
+            </p>
+            <p class="muted">
+              Target: y = max<sub>a</sub> Q(s,a) / H<sub>z</sub> + γ max<sub>a′</sub> Q(s′,a′). Compared against extrinsic reward, random reward, and a zero-target control.
+            </p>
+          </div>
+
+          <div class="block">
+            <h2>Pipeline</h2>
+            <div class="pipeline">
+              <div>
+                <span>01 CMA-ME</span>
+                <p>4 emitters, λ=20, 60-D CPPN genome with [0,1] hidden budget.</p>
+              </div>
+              <div>
+                <span>02 ES-HyperNEAT</span>
+                <p>CPPN queries substrate coords; zero diagonal, zero init bias.</p>
+              </div>
+              <div>
+                <span>03 Lifetime</span>
+                <p>Shared grid or single-agent task; optional PC / Q updates.</p>
+              </div>
+              <div>
+                <span>04 MAP-Elites</span>
+                <p>Archive by spectral radius × hidden size.</p>
+              </div>
+            </div>
+          </div>
+
+          <div class="block">
+            <h2>Agents &amp; arms</h2>
+            <ul>
+              <li><strong>PHA</strong> — recurrent softsign; probabilistic gating; bounded Q head.</li>
+              <li><strong>DQN</strong> — feedforward softsign hidden; linear Q; replay + target net.</li>
+              <li><strong>None / PC / Self / Ext / Rand / Zero</strong> — learning-rule ablations.</li>
+            </ul>
+          </div>
+
+          <div class="block takeaways">
+            <h2>Takeaways</h2>
+            <ul>
+              <li>Self-bootstrapped Q is best on the <strong>grid</strong> for both agents.</li>
+              <li>Extrinsic reward is <strong>not</strong> an upper bound under this weak learner.</li>
+              <li>On benchmarks, <strong>architecture</strong> dominates the learning rule.</li>
+              <li>The grid advantage <strong>does not transfer</strong> to T-maze, CartPole, or MountainCar.</li>
+            </ul>
+          </div>
+        </div>
+
+        <!-- CENTER -->
+        <div class="col">
+          <div class="callout block">
+            <strong>Grid result — self-bootstrapped Q leads both agents</strong>
+            DQN self 12.0 ± 0.8 · PHA self 11.3 ± 0.9 · no learning ≈ 8.1. Random reward recovers ~half the gain; zero target falls below no learning.
+          </div>
+
+          <figure class="fig">
+            <img src="results/summary/compare_grid.png" alt="Grid world comparison across learning rules" />
+            <figcaption>Grid world (10 seeds). Mean fitness, archive, |max Q|, and weight drift. Thick = seed mean; faint = individual seeds.</figcaption>
+          </figure>
+
+          <div class="block">
+            <h2>Grid scores · last 10 generations</h2>
+            <table>
+              <thead>
+                <tr><th>Variation</th><th>PHA</th><th>DQN</th></tr>
+              </thead>
+              <tbody>
+                <tr><td>No learning</td><td>8.1 ± 1.2</td><td>8.2 ± 0.7</td></tr>
+                <tr><td>Predictive coding</td><td>10.2 ± 1.0</td><td>—</td></tr>
+                <tr><td>Self-bootstrapped Q</td><td class="best">11.3 ± 0.9</td><td class="best">12.0 ± 0.8</td></tr>
+                <tr><td>Extrinsic reward</td><td>8.1 ± 1.1</td><td>9.8 ± 0.8</td></tr>
+                <tr><td>Random reward</td><td>9.2 ± 0.6</td><td>9.5 ± 0.8</td></tr>
+                <tr><td>Zero target</td><td>—</td><td>7.7 ± 0.7</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- RIGHT -->
+        <div class="col">
+          <div class="block">
+            <h2>Benchmarks · what each asks</h2>
+            <div class="tasks">
+              <div class="task">
+                <p class="tests">Memory</p>
+                <h3>T-maze</h3>
+                <p>Cue at step 0 only; junction after corridor 4; 40 trials.</p>
+                <p class="result">PHA none 2.6 ± 0.8 · DQN ≈ 0 · learning hurts PHA (abstention).</p>
+              </div>
+              <div class="task">
+                <p class="tests">Recurrence</p>
+                <h3>CartPole POMDP</h3>
+                <p>Velocities hidden; fitness = steps over 3 episodes.</p>
+                <p class="result">PHA 140–149 · DQN 121–123 · PC best (149 ± 1.7).</p>
+              </div>
+              <div class="task">
+                <p class="tests">Sparse reward</p>
+                <h3>MountainCar</h3>
+                <p>−1/step until goal; fitness = steps saved when reached.</p>
+                <p class="result">DQN none 178 ± 5.5 · every learning rule hurts · PHA lags.</p>
+              </div>
+            </div>
+          </div>
+
+          <figure class="fig">
+            <img src="results/summary/compare_benchmarks.png" alt="Benchmark curves and final scores" />
+            <figcaption>Three tasks × learning rules (5 seeds). Top: fitness over generations. Bottom: final score per seed.</figcaption>
+          </figure>
+
+          <div class="block">
+            <h2>Caveats</h2>
+            <p class="muted">
+              Benchmarks n=5; dense Q uses reward scale 0.1; BPTT 4 (bench) / 8 (grid); within-lifetime lr=0.05 may be too weak to exploit extrinsic reward; T-maze elites share trials (selection bias).
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <footer class="foot">
+        <p>
+          <strong>Reproduce</strong>
+          <code>clang++ -std=c++17 -O2 … main.cpp -o realbm</code>
+          · <code>./run_sweep.sh grid|bench</code>
+          · <code>python3 visualize.py</code>
+        </p>
+        <p>Header-only C++17 · Eigen · assets from completed sweeps</p>
+        <p><strong>RealBM</strong> · see also <em>index.html</em></p>
+      </footer>
+    </article>
+  </div>
+</body>
+</html>
