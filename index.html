@@ -4,8 +4,8 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>RealBM — evolving architecture and reward together</title>
-  <meta name="description" content="RealBM evolves PHA and DQN agents with CMA-ME, MAP-Elites and ES-HyperNEAT, comparing self-bootstrapped Q against extrinsic and random reward baselines on a shared grid and three classic benchmarks." />
+  <title>EitOR — evolving architecture and reward together</title>
+  <meta name="description" content="EitOR evolves PHA and DQN agents with CMA-ME, MAP-Elites and ES-HyperNEAT, comparing self-bootstrapped Q against extrinsic and random reward baselines on a shared grid and three classic benchmarks." />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet" />
@@ -555,7 +555,7 @@
 </head>
 <body>
   <nav class="nav" aria-label="Primary">
-    <a class="nav-brand" href="#">RealBM</a>
+    <a class="nav-brand" href="#">EitOR</a>
     <ul class="nav-links">
       <li><a href="#idea">Idea</a></li>
       <li><a href="#method">Method</a></li>
@@ -577,7 +577,7 @@
       <div class="hero-shade"></div>
     </div>
     <div class="hero-copy">
-      <p class="brand">RealBM</p>
+      <p class="brand">EitOR</p>
       <h1>Evolve the learner. Bootstrap the reward.</h1>
       <p class="hero-lead">
         Quality-diversity search builds PHA and DQN agents on a shared grid, then asks whether a self-bootstrapped Q signal can stand in for extrinsic reward.
@@ -794,7 +794,7 @@
         Header-only C++17 with Eigen. Logs name themselves from the run tag; visualize.py ranks runs and draws the best and worst.
       </p>
       <pre class="run-cmd reveal"><span class="c"># build</span>
-clang++ -std=c++17 -O2 -I/opt/homebrew/include/eigen3 main.cpp -o realbm
+clang++ -std=c++17 -O2 -I/opt/homebrew/include/eigen3 main.cpp -o eitor
 
 <span class="c"># grid baselines + three benchmarks</span>
 ./run_sweep.sh grid
@@ -813,7 +813,7 @@ python3 visualize.py --anim --jobs 8</pre>
   </section>
 
   <footer>
-    <p><strong>RealBM</strong> — CMA-ME · MAP-Elites · ES-HyperNEAT · self-bootstrapped Q</p>
+    <p><strong>EitOR</strong> — CMA-ME · MAP-Elites · ES-HyperNEAT · self-bootstrapped Q</p>
     <p>Local research prototype · grid n=10 · benchmarks n=5</p>
   </footer>
 
